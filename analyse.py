@@ -5,8 +5,6 @@ def analyse_tarification(fichier_excel):
     from sklearn.compose import ColumnTransformer
     from sklearn.preprocessing import OneHotEncoder
     from sklearn.metrics import mean_absolute_error, mean_squared_error
-    import matplotlib.pyplot as plt
-    import seaborn as sns
 
     # Lecture du fichier
     df = pd.read_excel(fichier_excel)
@@ -51,12 +49,12 @@ def analyse_tarification(fichier_excel):
     resultat_gamma = modele_gamma.fit()
     df_severite["Severite_Predite"] = resultat_gamma.predict(X_severite_prepare)
 
-    # Fusion des résultats
-    df["Severite_Predite"] = 0
-    df.loc[df_severite.index, "Severite_Predite"] = df_severite["Severite_Predite"]
-    df["Prime_Proposee"] = df["Frequence_Predite"] * df["Severite_Predite"]
+    # Fusion des résultats (correction du bug)
+    df["Severite_Predite"] = 0.0
+    df.loc[df_severite.index, "Severite_Predite"] = df_severite["Severite_Predite"].values
 
-    # Prime commerciale
+    # Prime proposée et commerciale
+    df["Prime_Proposee"] = df["Frequence_Predite"] * df["Severite_Predite"]
     taux_chargement = 0.25
     df["Prime_Commerciale"] = df["Prime_Proposee"] * (1 + taux_chargement)
     df["Ecart_Prime"] = df["Prime_Proposee"] - df["PrimeActuelle"]
